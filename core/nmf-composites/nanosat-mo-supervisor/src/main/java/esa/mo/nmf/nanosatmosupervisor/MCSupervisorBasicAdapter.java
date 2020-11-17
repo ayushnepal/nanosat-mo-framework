@@ -9,6 +9,8 @@ import esa.mo.helpertools.helpers.HelperAttributes;
 import esa.mo.nmf.MCRegistration;
 import esa.mo.nmf.MonitorAndControlNMFAdapter;
 import esa.mo.nmf.NMFException;
+import esa.mo.nmf.nanosatmosupervisor.parameter.OBSWParameter;
+import esa.mo.nmf.nanosatmosupervisor.parameter.OBSWParameterManager;
 import esa.mo.sm.impl.util.OSValidator;
 import esa.mo.sm.impl.util.ShellCommander;
 import java.io.IOException;
@@ -17,6 +19,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
 import org.ccsds.moims.mo.mal.MALException;
 import org.ccsds.moims.mo.mal.MALInteractionException;
 import org.ccsds.moims.mo.mal.MALStandardError;
@@ -41,6 +44,7 @@ import org.ccsds.moims.mo.mc.structures.AttributeValue;
 import org.ccsds.moims.mo.mc.structures.AttributeValueList;
 import org.ccsds.moims.mo.mc.structures.ConditionalConversionList;
 import org.ccsds.moims.mo.platform.gps.consumer.GPSAdapter;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -63,6 +67,11 @@ public class MCSupervisorBasicAdapter extends MonitorAndControlNMFAdapter{
 
   private final ShellCommander shellCommander = new ShellCommander();
   private NanoSatMOSupervisor nmfconnector;
+
+  /**
+   * Manages the OBSW parameter provisioning
+   */
+  private OBSWParameterManager obswParameterManager;
 
   public void setNmfConnector(NanoSatMOSupervisor conn) {
     nmfconnector = conn;
@@ -101,6 +110,9 @@ public class MCSupervisorBasicAdapter extends MonitorAndControlNMFAdapter{
         null
     ));
     paramIdentifiers.add(new Identifier(PARAMETER_OS_VERSION));
+
+    /* OBSW PARAMETERS PROXIES */
+    addOBSWParametersProxies(defs, paramIdentifiers);
     registrationObject.registerParameters(paramIdentifiers, defs);
 
     /* ACTIONS */
@@ -150,6 +162,40 @@ public class MCSupervisorBasicAdapter extends MonitorAndControlNMFAdapter{
     actionIdentifiers.add(new Identifier(ACTION_CLOCK_SET_TIME));
 
     registrationObject.registerActions(actionIdentifiers, actionDefs);
+  }
+
+  /**
+   * Add OBSW parameters proxies to the list of parameters to register in the supervisor parameter service. 
+   *
+   * @param paramDefs The list of parameter definition details to register
+   * @param paramIdentifiers The list of parameter identifier to register
+   */
+  private void addOBSWParametersProxies(ParameterDefinitionDetailsList paramDefs,  IdentifierList paramIdentifiers)
+  {
+      try
+      {
+          obswParameterManager = new OBSWParameterManager(
+                  getClass().getClassLoader().getResourceAsStream("Datapool.xml"),
+                  getClass().getClassLoader().getResourceAsStream("Aggregations.xml"));
+
+          for (OBSWParameter param : obswParameterManager.getParameters())
+          {
+              paramDefs.add(
+                      new ParameterDefinitionDetails(
+                              param.getDescription(),
+                              HelperAttributes.attributeName2typeShortForm(param.getType()).byteValue(),
+                              "",
+                              false,
+                              new Duration(10),
+                              null,
+                              null));
+              paramIdentifiers.add(new Identifier(param.getName()));
+          }
+      }
+      catch (ParserConfigurationException | SAXException | IOException e)
+      {
+          LOGGER.log(Level.SEVERE, "Couldn't register OBSW parameters proxies", e);
+      }
   }
 
   @Override
