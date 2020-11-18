@@ -7,20 +7,14 @@ package esa.mo.nmf.nanosatmosupervisor.parameter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
 import javax.xml.parsers.ParserConfigurationException;
 import org.ccsds.moims.mo.mal.structures.Attribute;
 import org.ccsds.moims.mo.mal.structures.Duration;
 import org.ccsds.moims.mo.mal.structures.Identifier;
 import org.ccsds.moims.mo.mal.structures.IdentifierList;
-import org.ccsds.moims.mo.mal.structures.LongList;
 import org.ccsds.moims.mo.mc.parameter.structures.ParameterDefinitionDetails;
 import org.ccsds.moims.mo.mc.parameter.structures.ParameterDefinitionDetailsList;
-import org.ccsds.moims.mo.mc.structures.ObjectInstancePair;
-import org.sqlite.SQLiteConfig.Pragma;
 import org.xml.sax.SAXException;
 import esa.mo.helpertools.helpers.HelperAttributes;
 import esa.mo.nmf.MCRegistration;
@@ -42,9 +36,9 @@ public class OBSWParameterManager {
   private AggregationReader aggregationReader;
 
   /**
-   * Maps each OBSW parameter id to its proxy id
+   * Provides the OBSW parameter values through a caching mechanism.
    */
-  private HashMap<Long, Long> paramsIdtoProxiesId;
+  private CacheHandler cacheHandler;
 
   public OBSWParameterManager(InputStream datapool, InputStream aggregations)
       throws ParserConfigurationException, SAXException, IOException {
@@ -52,17 +46,9 @@ public class OBSWParameterManager {
     parameterReader = new ParameterReader(datapool);
     aggregationReader = new AggregationReader(aggregations, parameterReader.getParameters());
 
-    // Init maps
-    paramsIdtoProxiesId = new HashMap<Long, Long>();
-  }
-
-  /**
-   * Returns the list of parameters defined in the OBSW.
-   *
-   * @return The list of parameters
-   */
-  private List<OBSWParameter> getParameters() {
-    return new ArrayList<OBSWParameter>(parameterReader.getParameters().values());
+    // Init
+    DummyValuesProvider valuesProvider = new DummyValuesProvider(parameterReader.getParameters());
+    cacheHandler = new CacheHandler(valuesProvider);
   }
 
   /**
@@ -72,7 +58,8 @@ public class OBSWParameterManager {
    */
   public void registerParametersProxies(MCRegistration registrationObject) {
     // Sort parameters by id
-    List<OBSWParameter> parameters = getParameters();
+    List<OBSWParameter> parameters =
+        new ArrayList<OBSWParameter>(parameterReader.getParameters().values());
     parameters.sort((OBSWParameter p1, OBSWParameter p2) -> p1.getId().compareTo(p2.getId()));
 
     // Create the parameter proxies definitions
@@ -87,22 +74,16 @@ public class OBSWParameterManager {
     }
 
     // Register the parameter proxies
-    LongList proxyIds = registrationObject.registerParameters(paramIdentifiers, paramDefs);
-
-    // Fill in the map of ids
-    for (int i = 0; i < proxyIds.size(); i++) {
-      paramsIdtoProxiesId.put(parameters.get(i).getId(), proxyIds.get(i));
-    }
+    registrationObject.registerParameters(paramIdentifiers, paramDefs);
   }
 
   /**
-   * TODO getValue
+   * Returns a value for the given parameter name.
    *
-   * @param identifier
-   * @return
+   * @param identifier Name of the parameter
+   * @return The value or null if the parameter name is unknown
    */
   public Attribute getValue(Identifier identifier) {
-    OBSWParameter param = parameterReader.getParameters().get(identifier.getValue());
-    return HelperAttributes.attributeName2Attribute(param.getType());
+    return cacheHandler.getValue(identifier);
   }
 }
