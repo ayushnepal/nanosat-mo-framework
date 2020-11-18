@@ -16,7 +16,7 @@ public class OBSWParameter {
   /**
    * Parameter ID (object instance id of the ParameterIdentity).
    */
-  private long id;
+  private Long id;
 
   /**
    * Parameter name (Identifier, body of the ParameterIdentity)
@@ -121,7 +121,7 @@ public class OBSWParameter {
    *
    * @return The ID.
    */
-  public long getId() {
+  public Long getId() {
     return id;
   }
 
@@ -130,7 +130,7 @@ public class OBSWParameter {
    *
    * @param id The ID.
    */
-  public void setId(long id) {
+  public void setId(Long id) {
     this.id = id;
   }
 

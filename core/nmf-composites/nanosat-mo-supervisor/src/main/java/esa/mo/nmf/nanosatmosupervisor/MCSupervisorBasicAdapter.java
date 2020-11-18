@@ -9,7 +9,6 @@ import esa.mo.helpertools.helpers.HelperAttributes;
 import esa.mo.nmf.MCRegistration;
 import esa.mo.nmf.MonitorAndControlNMFAdapter;
 import esa.mo.nmf.NMFException;
-import esa.mo.nmf.nanosatmosupervisor.parameter.OBSWParameter;
 import esa.mo.nmf.nanosatmosupervisor.parameter.OBSWParameterManager;
 import esa.mo.sm.impl.util.OSValidator;
 import esa.mo.sm.impl.util.ShellCommander;
@@ -110,10 +109,17 @@ public class MCSupervisorBasicAdapter extends MonitorAndControlNMFAdapter{
         null
     ));
     paramIdentifiers.add(new Identifier(PARAMETER_OS_VERSION));
+    registrationObject.registerParameters(paramIdentifiers, defs);
 
     /* OBSW PARAMETERS PROXIES */
-    addOBSWParametersProxies(defs, paramIdentifiers);
-    registrationObject.registerParameters(paramIdentifiers, defs);
+    try {
+      obswParameterManager = new OBSWParameterManager(
+          getClass().getClassLoader().getResourceAsStream("Datapool.xml"),
+          getClass().getClassLoader().getResourceAsStream("Aggregations.xml"));
+      obswParameterManager.registerParametersProxies(registrationObject);
+    } catch (ParserConfigurationException | SAXException | IOException e) {
+      LOGGER.log(Level.SEVERE, "Couldn't register OBSW parameters proxies", e);
+    }
 
     /* ACTIONS */
     ActionDefinitionDetailsList actionDefs = new ActionDefinitionDetailsList();
@@ -164,46 +170,13 @@ public class MCSupervisorBasicAdapter extends MonitorAndControlNMFAdapter{
     registrationObject.registerActions(actionIdentifiers, actionDefs);
   }
 
-  /**
-   * Add OBSW parameters proxies to the list of parameters to register in the supervisor parameter service. 
-   *
-   * @param paramDefs The list of parameter definition details to register
-   * @param paramIdentifiers The list of parameter identifier to register
-   */
-  private void addOBSWParametersProxies(ParameterDefinitionDetailsList paramDefs,  IdentifierList paramIdentifiers)
-  {
-      try
-      {
-          obswParameterManager = new OBSWParameterManager(
-                  getClass().getClassLoader().getResourceAsStream("Datapool.xml"),
-                  getClass().getClassLoader().getResourceAsStream("Aggregations.xml"));
-
-          for (OBSWParameter param : obswParameterManager.getParameters())
-          {
-              paramDefs.add(
-                      new ParameterDefinitionDetails(
-                              param.getDescription(),
-                              HelperAttributes.attributeName2typeShortForm(param.getType()).byteValue(),
-                              "",
-                              false,
-                              new Duration(10),
-                              null,
-                              null));
-              paramIdentifiers.add(new Identifier(param.getName()));
-          }
-      }
-      catch (ParserConfigurationException | SAXException | IOException e)
-      {
-          LOGGER.log(Level.SEVERE, "Couldn't register OBSW parameters proxies", e);
-      }
-  }
-
   @Override
   public Attribute onGetValue(Identifier identifier, Byte rawType) {
     OSValidator osv = new OSValidator();
     if(identifier == null){
       return null;
     }
+    // Parameters
     if (PARAMETER_CURRENT_PARTITION.equals(identifier.getValue())) {
       if (osv.isUnix()) {
         String msg = shellCommander.runCommandAndGetOutputMessage(CMD_CURRENT_PARTITION);
@@ -220,7 +193,9 @@ public class MCSupervisorBasicAdapter extends MonitorAndControlNMFAdapter{
       }
       return (Attribute) HelperAttributes.javaType2Attribute(msg);
     }
-    return null;
+
+    // OBSW parameters proxies
+    return obswParameterManager.getValue(identifier);
   }
 
   @Override
