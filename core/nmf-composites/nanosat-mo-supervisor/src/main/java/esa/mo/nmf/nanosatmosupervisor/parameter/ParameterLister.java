@@ -4,6 +4,7 @@
 
 package esa.mo.nmf.nanosatmosupervisor.parameter;
 
+import org.ccsds.moims.mo.mal.structures.Identifier;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -21,11 +22,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Reads the list of OBSW parameters from the datapool XML file.
+ * Reads the list of OBSW parameters from the datapool XML file and provides it as a map.
  *
  * @author Tanguy Soto
  */
-public class ParameterReader {
+public class ParameterLister {
   private static final Logger LOGGER = Logger.getLogger(MCSupervisorBasicAdapter.class.getName());
 
   /**
@@ -61,7 +62,7 @@ public class ParameterReader {
   /**
    * The map of OBSW parameters defined in datapool so they can be accessed by parameter name.
    */
-  private final Map<String, OBSWParameter> parameterMap;
+  private final Map<Identifier, OBSWParameter> parameterMap;
 
 
   /**
@@ -72,7 +73,7 @@ public class ParameterReader {
    * @throws SAXException
    * @throws IOException
    */
-  public ParameterReader(InputStream datapool)
+  public ParameterLister(InputStream datapool)
       throws ParserConfigurationException, SAXException, IOException {
     LOGGER.log(Level.INFO, "Loading OBSW parameters from datapool");
     this.parameterMap = readParameters(datapool);
@@ -83,7 +84,7 @@ public class ParameterReader {
    *
    * @return The parameters in the datapool.
    */
-  public Map<String, OBSWParameter> getParameters() {
+  public Map<Identifier, OBSWParameter> getParameters() {
     return this.parameterMap;
   }
 
@@ -97,9 +98,9 @@ public class ParameterReader {
    * @throws SAXException
    * @throws ParserConfigurationException
    */
-  private Map<String, OBSWParameter> readParameters(InputStream datapool)
+  private Map<Identifier, OBSWParameter> readParameters(InputStream datapool)
       throws IOException, SAXException, ParserConfigurationException {
-    Map<String, OBSWParameter> map = new HashMap<>();
+    Map<Identifier, OBSWParameter> map = new HashMap<>();
 
     DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
     DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
@@ -123,7 +124,7 @@ public class ParameterReader {
         parameter.setDescription(description);
         parameter.setType(malAttTypeName);
         parameter.setUnit(unit);
-        map.put(parameter.getName(), parameter);
+        map.put(new Identifier(parameter.getName()), parameter);
       }
     }
 

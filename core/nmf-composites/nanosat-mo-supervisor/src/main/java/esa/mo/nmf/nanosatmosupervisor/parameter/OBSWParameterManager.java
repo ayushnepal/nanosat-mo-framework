@@ -20,7 +20,7 @@ import esa.mo.helpertools.helpers.HelperAttributes;
 import esa.mo.nmf.MCRegistration;
 
 /**
- * TODO OBSWParameterManager
+ * Handles the provisioning of O
  *
  * @author Tanguy Soto
  */
@@ -28,12 +28,12 @@ public class OBSWParameterManager {
   /**
    * Helper to read the OBSW parameter from datapool.
    */
-  private ParameterReader parameterReader;
+  private final ParameterLister parameterLister;
 
   /**
    * Helper to read the OBSW aggregations.
    */
-  private AggregationReader aggregationReader;
+  private final AggregationLister aggregationReader;
 
   /**
    * Provides the OBSW parameter values through a caching mechanism.
@@ -43,12 +43,12 @@ public class OBSWParameterManager {
   public OBSWParameterManager(InputStream datapool, InputStream aggregations)
       throws ParserConfigurationException, SAXException, IOException {
     // Read from provided inputstreams
-    parameterReader = new ParameterReader(datapool);
-    aggregationReader = new AggregationReader(aggregations, parameterReader.getParameters());
+    parameterLister = new ParameterLister(datapool);
+    aggregationReader = new AggregationLister(aggregations, parameterLister);
 
     // Init
-    DummyValuesProvider valuesProvider = new DummyValuesProvider(parameterReader.getParameters());
-    cacheHandler = new CacheHandler(valuesProvider);
+    DummyValuesProvider valuesProvider = new DummyValuesProvider(parameterLister);
+    cacheHandler = new CacheHandler(parameterLister, valuesProvider);
   }
 
   /**
@@ -59,7 +59,7 @@ public class OBSWParameterManager {
   public void registerParametersProxies(MCRegistration registrationObject) {
     // Sort parameters by id
     List<OBSWParameter> parameters =
-        new ArrayList<OBSWParameter>(parameterReader.getParameters().values());
+        new ArrayList<OBSWParameter>(parameterLister.getParameters().values());
     parameters.sort((OBSWParameter p1, OBSWParameter p2) -> p1.getId().compareTo(p2.getId()));
 
     // Create the parameter proxies definitions
@@ -78,10 +78,10 @@ public class OBSWParameterManager {
   }
 
   /**
-   * Returns a value for the given parameter name.
+   * Returns a value for the given OBSW parameter name.
    *
    * @param identifier Name of the parameter
-   * @return The value or null if the parameter name is unknown
+   * @return The value
    */
   public Attribute getValue(Identifier identifier) {
     return cacheHandler.getValue(identifier);

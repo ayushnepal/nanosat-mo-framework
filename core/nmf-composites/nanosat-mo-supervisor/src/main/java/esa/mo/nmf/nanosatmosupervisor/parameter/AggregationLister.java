@@ -4,6 +4,7 @@
 
 package esa.mo.nmf.nanosatmosupervisor.parameter;
 
+import org.ccsds.moims.mo.mal.structures.Identifier;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -23,11 +24,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Reads the list of OBSW aggregation from the aggregation XML file.
+ * Reads the list of OBSW aggregation from the aggregation XML file and provides it as a map.
  *
  * @author Tanguy Soto
  */
-public class AggregationReader {
+public class AggregationLister {
   private static final Logger LOGGER = Logger.getLogger(MCSupervisorBasicAdapter.class.getName());
 
   /**
@@ -98,15 +99,15 @@ public class AggregationReader {
    * added to the parameter's list of aggregations.
    *
    * @param aggregations The aggregations file to read.
-   * @param parameterMap The map of OBSW parameters in the datapool.
+   * @param parameterLister Object providing the list of OBSW parameter
    * @throws IOException
    * @throws SAXException
    * @throws ParserConfigurationException
    */
-  public AggregationReader(InputStream aggregations, Map<String, OBSWParameter> parameterMap)
+  public AggregationLister(InputStream aggregations, ParameterLister parameterLister)
       throws IOException, SAXException, ParserConfigurationException {
     LOGGER.log(Level.INFO, "Loading OBSW aggregations");
-    aggregationMap = readAggregations(aggregations, parameterMap);
+    aggregationMap = readAggregations(aggregations, parameterLister);
   }
 
   /**
@@ -124,14 +125,14 @@ public class AggregationReader {
    * parameter's list of aggregations.
    *
    * @param aggregations The XML file to read.
-   * @param parameterMap The parameters to resolve references.
+   * @param parameterLister Object providing the list of OBSW parameter
    * @return The map of aggregations found (by ID).
    * @throws ParserConfigurationException
    * @throws IOException
    * @throws SAXException
    */
   private Map<Long, OBSWAggregation> readAggregations(InputStream aggregations,
-      Map<String, OBSWParameter> parameterMap)
+      ParameterLister parameterLister)
       throws ParserConfigurationException, IOException, SAXException {
     Map<Long, OBSWAggregation> map = new HashMap<>();
 
@@ -166,7 +167,8 @@ public class AggregationReader {
         }
         aggregation.setGenerationEnabled(Boolean.parseBoolean(generationEnabled));
 
-        List<OBSWParameter> parameters = getParameterList(parameterMap, aggregationElement);
+        List<OBSWParameter> parameters =
+            getParameterList(parameterLister.getParameters(), aggregationElement);
         aggregation.setParameters(parameters);
 
         for (OBSWParameter param : aggregation.getParameters()) {
@@ -187,7 +189,7 @@ public class AggregationReader {
    * @param aggregationElement The XML node to get sub-elements.
    * @return The list of parameters that are referenced by aggregationElement.
    */
-  private List<OBSWParameter> getParameterList(Map<String, OBSWParameter> parameterMap,
+  private List<OBSWParameter> getParameterList(Map<Identifier, OBSWParameter> parameterMap,
       Element aggregationElement) {
     List<OBSWParameter> parameterList = new ArrayList<>();
 
@@ -200,7 +202,7 @@ public class AggregationReader {
         Element OBSWParameterElement = (Element) OBSWParameterNode;
 
         String paramName = OBSWParameterElement.getAttribute(ATTRIBUTE_REF);
-        OBSWParameter parameter = parameterMap.get(paramName);
+        OBSWParameter parameter = parameterMap.get(new Identifier(paramName));
         // Only add references that can be found
         if (parameter != null) {
           parameterList.add(parameter);
