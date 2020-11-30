@@ -82,6 +82,12 @@
           <include>LICENCE.md</include>
         </includes>
       </resource>
+      <resource>
+        <directory>${basedir}/src/main/resources</directory>
+        <includes>
+          <include>*.xml</include>
+        </includes>
+      </resource>
     </resources>
     <plugins>
       <plugin>

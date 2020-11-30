@@ -20,7 +20,7 @@ import esa.mo.helpertools.helpers.HelperAttributes;
 import esa.mo.nmf.MCRegistration;
 
 /**
- * Handles the provisioning of O
+ * Handles the provisioning of OBSW parameter.
  *
  * @author Tanguy Soto
  */
