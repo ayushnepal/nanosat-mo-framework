@@ -6,8 +6,6 @@ package esa.mo.nmf.nanosatmosupervisor.parameter;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.ccsds.moims.mo.mal.structures.Attribute;
 import org.ccsds.moims.mo.mal.structures.Identifier;
 
@@ -18,13 +16,6 @@ import org.ccsds.moims.mo.mal.structures.Identifier;
  * @author Tanguy Soto
  */
 public class CacheHandler {
-  private static final Logger LOGGER = Logger.getLogger(CacheHandler.class.getName());
-
-  /**
-   * The parameters new values provider to call when we have to refresh a parameter value in the
-   * cache.
-   */
-  private final IOBSWParameterValuesProvider valuesProvider;
 
   private final ParameterLister parameterLister;
 
@@ -40,7 +31,7 @@ public class CacheHandler {
   /**
    * Maximum time a parameter value should stay in the cache in milliseconds.
    */
-  private final long MAX_CACHING_TIME = 10 * 1000;
+  private long cachingTime = 10 * 1000;
 
 
   /**
@@ -48,16 +39,19 @@ public class CacheHandler {
    * 
    * @param valuesProvider The values provider
    */
-  public CacheHandler(ParameterLister parameterLister,
-      IOBSWParameterValuesProvider valuesProvider) {
-    this.valuesProvider = valuesProvider;
+  public CacheHandler(ParameterLister parameterLister) {
     this.parameterLister = parameterLister;
 
-    if (this.valuesProvider == null) {
-      LOGGER.log(Level.SEVERE,
-          "OBSWParameterValuesProvider provided is null, only null parameter values will be returned");
-    }
     cache = new HashMap<Identifier, OBSWParameterValue>();
+  }
+
+  /**
+   * Sets the maximum time a parameter value should stay in the cache in milliseconds.
+   * 
+   * @param cachingTime the time
+   */
+  public void setCachingTime(long cachingTime) {
+    this.cachingTime = cachingTime;
   }
 
   /**
@@ -67,45 +61,30 @@ public class CacheHandler {
    * @param identifier Name of the parameter
    * @return A boolean
    */
-  private synchronized boolean mustRefreshValue(Identifier identifier) {
+  public synchronized boolean mustRefreshValue(Identifier identifier) {
     // Value for this parameter has never been cached
     if (!cache.containsKey(identifier)) {
       return true;
     }
 
-    // This parameter value is outdated
     long now = System.currentTimeMillis();
-    if (now - cache.get(identifier).getLastUpdateTime().getTime() > MAX_CACHING_TIME) {
+
+    // This parameter value is outdated
+    if (now - cache.get(identifier).getLastUpdateTime().getTime() > cachingTime) {
       return true;
     }
 
+    // No need to refresh, cached value is still valid.
     return false;
-  }
-
-  /**
-   * Returns a new value for the given OBSW parameter and cache it for later retrieval.
-   *
-   * @param identifier Name of the parameter
-   * @return The value or null if the values provider is null
-   */
-  private Attribute getNewValue(Identifier identifier) {
-    if (this.valuesProvider == null) {
-      return null;
-    }
-
-    Attribute value = valuesProvider.getValue(identifier);
-    cacheValue(value, identifier);
-
-    return value;
   }
 
   /**
    * Returns the cached value for the given OBSW parameter.
    *
    * @param identifier Name of the parameter
-   * @return The value or null if the parameter name is unknown
+   * @return The value or null if the parameter name is unknown (was never cached before)
    */
-  private synchronized Attribute getCachedValue(Identifier identifier) {
+  public synchronized Attribute getCachedValue(Identifier identifier) {
     if (!cache.containsKey(identifier)) {
       return null;
     }
@@ -118,26 +97,12 @@ public class CacheHandler {
    * @param value Value to cache
    * @param identifier Name of the parameter
    */
-  private synchronized void cacheValue(Attribute value, Identifier identifier) {
+  public synchronized void cacheValue(Attribute value, Identifier identifier) {
     if (!cache.containsKey(identifier)) {
       cache.put(identifier,
           new OBSWParameterValue(parameterLister.getParameters().get(identifier), value));
     } else {
       cache.get(identifier).setValue(value);
     }
-  }
-
-  /**
-   * Returns a value for the given parameter name. The value might be new from the values provider
-   * or come from the internal cache if eligible.
-   *
-   * @param identifier Name of the parameter
-   * @return The value
-   */
-  public Attribute getValue(Identifier identifier) {
-    if (mustRefreshValue(identifier)) {
-      return getNewValue(identifier);
-    }
-    return getCachedValue(identifier);
   }
 }

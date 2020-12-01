@@ -4,8 +4,6 @@
 
 package esa.mo.nmf.nanosatmosupervisor.parameter;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.ccsds.moims.mo.mal.structures.Attribute;
 import org.ccsds.moims.mo.mal.structures.Identifier;
 import esa.mo.helpertools.helpers.HelperAttributes;
@@ -17,18 +15,11 @@ import esa.mo.helpertools.helpers.HelperAttributes;
  * @author Tanguy Soto
  */
 public class DummyValuesProvider implements IOBSWParameterValuesProvider {
-  private static final Logger LOGGER = Logger.getLogger(DummyValuesProvider.class.getName());
 
   /**
    * Object providing the list of OBSW parameters
    */
   private final ParameterLister parameterLister;
-
-  /**
-   * Counts how many time a value was queried.
-   */
-  private static int counter = 0;
-
 
   /**
    * Creates a new instance of DummyValuesProvider.
@@ -42,9 +33,6 @@ public class DummyValuesProvider implements IOBSWParameterValuesProvider {
   /** {@inheritDoc} */
   @Override
   public Attribute getValue(Identifier identifier) {
-    counter++;
-    LOGGER.log(Level.FINE, "getValue() called for the " + counter + " times");
-
     OBSWParameter param = parameterLister.getParameters().get(identifier);
     return HelperAttributes.attributeName2Attribute(param.getType());
   }

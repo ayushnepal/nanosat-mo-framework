@@ -36,9 +36,9 @@ public class OBSWParameterManager {
   private final AggregationLister aggregationReader;
 
   /**
-   * Provides the OBSW parameter values through a caching mechanism.
+   * Provides the OBSW parameter values
    */
-  private CacheHandler cacheHandler;
+  private IOBSWParameterValuesProvider valuesProvider;
 
   public OBSWParameterManager(InputStream datapool, InputStream aggregations)
       throws ParserConfigurationException, SAXException, IOException {
@@ -47,8 +47,9 @@ public class OBSWParameterManager {
     aggregationReader = new AggregationLister(aggregations, parameterLister);
 
     // Init
-    DummyValuesProvider valuesProvider = new DummyValuesProvider(parameterLister);
-    cacheHandler = new CacheHandler(parameterLister, valuesProvider);
+    // TODO make choice of OBSW parameter provider configurable
+    //valuesProvider = new DummyValuesProvider(parameterLister);
+    valuesProvider  = new OPSSATValueProvider(parameterLister);
   }
 
   /**
@@ -84,6 +85,6 @@ public class OBSWParameterManager {
    * @return The value
    */
   public Attribute getValue(Identifier identifier) {
-    return cacheHandler.getValue(identifier);
+    return valuesProvider.getValue(identifier);
   }
 }
