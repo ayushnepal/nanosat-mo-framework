@@ -17,7 +17,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -62,7 +61,7 @@ public class ParameterLister {
   /**
    * The map of OBSW parameters defined in datapool so they can be accessed by parameter name.
    */
-  private final Map<Identifier, OBSWParameter> parameterMap;
+  private final HashMap<Identifier, OBSWParameter> parameterMap;
 
 
   /**
@@ -84,7 +83,7 @@ public class ParameterLister {
    *
    * @return The parameters in the datapool.
    */
-  public Map<Identifier, OBSWParameter> getParameters() {
+  public HashMap<Identifier, OBSWParameter> getParameters() {
     return this.parameterMap;
   }
 
@@ -98,9 +97,9 @@ public class ParameterLister {
    * @throws SAXException
    * @throws ParserConfigurationException
    */
-  private Map<Identifier, OBSWParameter> readParameters(InputStream datapool)
+  private HashMap<Identifier, OBSWParameter> readParameters(InputStream datapool)
       throws IOException, SAXException, ParserConfigurationException {
-    Map<Identifier, OBSWParameter> map = new HashMap<>();
+    HashMap<Identifier, OBSWParameter> map = new HashMap<>();
 
     DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
     DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();

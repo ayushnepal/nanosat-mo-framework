@@ -1,7 +1,6 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * To change this license header, choose License Headers in Project Properties. To change this
+ * template file, choose Tools | Templates and open the template in the editor.
  */
 package esa.mo.nmf.nanosatmosupervisor;
 
@@ -49,14 +48,14 @@ import org.xml.sax.SAXException;
  *
  * @author yannick
  */
-public class MCSupervisorBasicAdapter extends MonitorAndControlNMFAdapter{
+public class MCSupervisorBasicAdapter extends MonitorAndControlNMFAdapter {
 
   private static final Logger LOGGER = Logger.getLogger(MCSupervisorBasicAdapter.class.getName());
 
   private final static String DATE_PATTERN = "dd MMM yyyy HH:mm:ss.SSS";
   private static final String PARAMETER_CURRENT_PARTITION = "OSPartition";
-  private static final String CMD_CURRENT_PARTITION
-      = "mount -l | grep \"on / \" | grep -o 'mmc.*[0-9]p[0-9]'";
+  private static final String CMD_CURRENT_PARTITION =
+      "mount -l | grep \"on / \" | grep -o 'mmc.*[0-9]p[0-9]'";
   private static final String PARAMETER_OS_VERSION = "OSVersion";
   private static final String CMD_LINUX_VERSION = "uname -a";
   private static final String CMD_WINDOWS_VERSION = "systeminfo | findstr Version";
@@ -78,7 +77,7 @@ public class MCSupervisorBasicAdapter extends MonitorAndControlNMFAdapter{
 
   @Override
   public void initialRegistrations(MCRegistration registrationObject) {
-    if(registrationObject == null){
+    if (registrationObject == null) {
       return;
     }
 
@@ -90,32 +89,19 @@ public class MCSupervisorBasicAdapter extends MonitorAndControlNMFAdapter{
 
     defs.add(new ParameterDefinitionDetails(
         "The Current partition where the OS is running. Only works for linux",
-        Union.STRING_SHORT_FORM.byteValue(),
-        "",
-        false,
-        new Duration(10),
-        null,
-        null
-    ));
+        Union.STRING_SHORT_FORM.byteValue(), "", false, new Duration(10), null, null));
     paramIdentifiers.add(new Identifier(PARAMETER_CURRENT_PARTITION));
 
-    defs.add(new ParameterDefinitionDetails(
-        "The version of the operating system.",
-        Union.STRING_SHORT_FORM.byteValue(),
-        "",
-        false,
-        new Duration(10),
-        null,
-        null
-    ));
+    defs.add(new ParameterDefinitionDetails("The version of the operating system.",
+        Union.STRING_SHORT_FORM.byteValue(), "", false, new Duration(10), null, null));
     paramIdentifiers.add(new Identifier(PARAMETER_OS_VERSION));
     registrationObject.registerParameters(paramIdentifiers, defs);
 
     /* OBSW PARAMETERS PROXIES */
     try {
-      obswParameterManager = new OBSWParameterManager(
-          getClass().getClassLoader().getResourceAsStream("Datapool.xml"),
-          getClass().getClassLoader().getResourceAsStream("Aggregations.xml"));
+      obswParameterManager =
+          new OBSWParameterManager(getClass().getClassLoader().getResourceAsStream("Datapool.xml"),
+              getClass().getClassLoader().getResourceAsStream("Aggregations.xml"));
       obswParameterManager.registerParametersProxies(registrationObject);
     } catch (ParserConfigurationException | SAXException | IOException e) {
       LOGGER.log(Level.SEVERE, "Couldn't register OBSW parameters proxies", e);
@@ -132,16 +118,13 @@ public class MCSupervisorBasicAdapter extends MonitorAndControlNMFAdapter{
       Byte convertedType = null;
       String convertedUnit = null;
 
-      arguments1.add(new ArgumentDefinitionDetails(new Identifier("0"), null,
-          rawType, rawUnit, conditionalConversions, convertedType, convertedUnit));
+      arguments1.add(new ArgumentDefinitionDetails(new Identifier("0"), null, rawType, rawUnit,
+          conditionalConversions, convertedType, convertedUnit));
     }
 
-    ActionDefinitionDetails actionDef1 = new ActionDefinitionDetails(
-        "Injects the NMEA sentence identifier into the CAN bus.",
-        new UOctet((short) 0),
-        new UShort(0),
-        arguments1
-    );
+    ActionDefinitionDetails actionDef1 =
+        new ActionDefinitionDetails("Injects the NMEA sentence identifier into the CAN bus.",
+            new UOctet((short) 0), new UShort(0), arguments1);
 
     ArgumentDefinitionDetailsList arguments2 = new ArgumentDefinitionDetailsList();
     {
@@ -151,16 +134,13 @@ public class MCSupervisorBasicAdapter extends MonitorAndControlNMFAdapter{
       Byte convertedType = null;
       String convertedUnit = null;
 
-      arguments2.add(new ArgumentDefinitionDetails(new Identifier("0"), null,
-          rawType, rawUnit, conditionalConversions, convertedType, convertedUnit));
+      arguments2.add(new ArgumentDefinitionDetails(new Identifier("0"), null, rawType, rawUnit,
+          conditionalConversions, convertedType, convertedUnit));
     }
 
     ActionDefinitionDetails actionDef2 = new ActionDefinitionDetails(
         "Sets the clock using a diff between the on-board time and the desired time.",
-        new UOctet((short) 0),
-        new UShort(0),
-        arguments2
-    );
+        new UOctet((short) 0), new UShort(0), arguments2);
 
     actionDefs.add(actionDef1);
     actionDefs.add(actionDef2);
@@ -173,7 +153,7 @@ public class MCSupervisorBasicAdapter extends MonitorAndControlNMFAdapter{
   @Override
   public Attribute onGetValue(Identifier identifier, Byte rawType) {
     OSValidator osv = new OSValidator();
-    if(identifier == null){
+    if (identifier == null) {
       return null;
     }
     // Parameters
@@ -183,30 +163,33 @@ public class MCSupervisorBasicAdapter extends MonitorAndControlNMFAdapter{
         return (Attribute) HelperAttributes.javaType2Attribute(msg);
       }
     }
-    if(PARAMETER_OS_VERSION.equals(identifier.getValue())){
+    if (PARAMETER_OS_VERSION.equals(identifier.getValue())) {
       String msg = null;
-      if(osv.isUnix()){
+      if (osv.isUnix()) {
         msg = shellCommander.runCommandAndGetOutputMessage(CMD_LINUX_VERSION);
-      }
-      else if(osv.isWindows()){
+      } else if (osv.isWindows()) {
         msg = shellCommander.runCommandAndGetOutputMessage(CMD_WINDOWS_VERSION);
       }
       return (Attribute) HelperAttributes.javaType2Attribute(msg);
     }
 
     // OBSW parameters proxies
-    return obswParameterManager.getValue(identifier);
+    if (obswParameterManager != null) {
+      return obswParameterManager.getValue(identifier);
+    }
+
+    return null;
   }
 
   @Override
   public Boolean onSetValue(IdentifierList identifiers, ParameterRawValueList values) {
-    return false;  // to confirm that no variable was set
+    return false; // to confirm that no variable was set
   }
 
   @Override
   public UInteger actionArrived(Identifier name, AttributeValueList attributeValues,
       Long actionInstanceObjId, boolean reportProgress, MALInteraction interaction) {
-    if(name == null){
+    if (name == null) {
       return null;
     }
 
@@ -235,8 +218,8 @@ public class MCSupervisorBasicAdapter extends MonitorAndControlNMFAdapter{
       AttributeValue aVal = attributeValues.get(0); // Extract the delta!
       long delta = (Long) HelperAttributes.attribute2JavaType(aVal.getValue());
 
-      String str = (new SimpleDateFormat(DATE_PATTERN)).format(new Date(
-          System.currentTimeMillis() + delta));
+      String str =
+          (new SimpleDateFormat(DATE_PATTERN)).format(new Date(System.currentTimeMillis() + delta));
 
       ShellCommander shell = new ShellCommander();
       shell.runCommand("date -s \"" + str + " UTC\" | hwclock --systohc");
@@ -244,7 +227,7 @@ public class MCSupervisorBasicAdapter extends MonitorAndControlNMFAdapter{
       return null; // Success!
     }
 
-    return new UInteger(1);  // Action service not integrated
+    return new UInteger(1); // Action service not integrated
   }
 
   private class MCGPSAdapter extends GPSAdapter {

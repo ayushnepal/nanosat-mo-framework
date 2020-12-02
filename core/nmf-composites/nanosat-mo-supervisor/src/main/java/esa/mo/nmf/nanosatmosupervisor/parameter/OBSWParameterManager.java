@@ -6,8 +6,12 @@ package esa.mo.nmf.nanosatmosupervisor.parameter;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import org.ccsds.moims.mo.mal.structures.Attribute;
 import org.ccsds.moims.mo.mal.structures.Duration;
@@ -26,6 +30,11 @@ import esa.mo.nmf.MCRegistration;
  */
 public class OBSWParameterManager {
   /**
+   * The logger
+   */
+  private static final Logger LOGGER = Logger.getLogger(OBSWParameterManager.class.getName());
+
+  /**
    * Helper to read the OBSW parameter from datapool.
    */
   private final ParameterLister parameterLister;
@@ -38,7 +47,7 @@ public class OBSWParameterManager {
   /**
    * Provides the OBSW parameter values
    */
-  private IOBSWParameterValuesProvider valuesProvider;
+  private OBSWParameterValuesProvider valuesProvider;
 
   public OBSWParameterManager(InputStream datapool, InputStream aggregations)
       throws ParserConfigurationException, SAXException, IOException {
@@ -46,10 +55,17 @@ public class OBSWParameterManager {
     parameterLister = new ParameterLister(datapool);
     aggregationReader = new AggregationLister(aggregations, parameterLister);
 
-    // Init
-    // TODO make choice of OBSW parameter provider configurable
-    //valuesProvider = new DummyValuesProvider(parameterLister);
-    valuesProvider  = new OPSSATValueProvider(parameterLister);
+    // Instantiate the value provider
+    HashMap<Identifier, OBSWParameter> parameterMap = parameterLister.getParameters();
+    String valuesProviderClass = System.getProperty("nmf.supervisor.parameter.valuesprovider.impl");
+    try {
+      Constructor<?> c = Class.forName(valuesProviderClass).getConstructor(parameterMap.getClass());
+      valuesProvider = (OBSWParameterValuesProvider) c.newInstance(new Object[] {parameterMap});
+    } catch (Exception e) {
+      LOGGER.log(Level.SEVERE,
+          "Error initializing the values provider. Using dummy values provider.", e);
+      valuesProvider = new DummyValuesProvider(parameterMap);
+    }
   }
 
   /**
