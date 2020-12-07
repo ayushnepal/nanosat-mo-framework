@@ -95,8 +95,7 @@ public class AggregationLister {
 
   /**
    * Initializes this object with the list of aggregations defined in the aggregations file, using
-   * the map of parameters to resolve parameter references. Once created, each aggregation is also
-   * added to the parameter's list of aggregations.
+   * the map of parameters to resolve parameter references.
    *
    * @param aggregations The aggregations file to read.
    * @param parameterLister Object providing the list of OBSW parameter
@@ -121,8 +120,7 @@ public class AggregationLister {
 
   /**
    * Reads the aggregations XML file to create the aggregations defined there, using the map of
-   * parameters to resolve parameter references. Once created, each aggregation is also added to the
-   * parameter's list of aggregations.
+   * parameters to resolve parameter references.
    *
    * @param aggregations The XML file to read.
    * @param parameterLister Object providing the list of OBSW parameter
@@ -167,12 +165,9 @@ public class AggregationLister {
         }
         aggregation.setGenerationEnabled(Boolean.parseBoolean(generationEnabled));
 
-        List<OBSWParameter> parameters =
-            getParameterList(parameterLister.getParameters(), aggregationElement);
-        aggregation.setParameters(parameters);
-
-        for (OBSWParameter param : aggregation.getParameters()) {
-          param.addAggregation(aggregation);
+        for (OBSWParameter p : getParameterList(parameterLister.getParameters(),
+            aggregationElement)) {
+          aggregation.getParameters().add(p);
         }
 
         map.put(aggregation.getId(), aggregation);

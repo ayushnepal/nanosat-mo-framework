@@ -40,20 +40,14 @@ public class OBSWParameterManager {
   private final ParameterLister parameterLister;
 
   /**
-   * Helper to read the OBSW aggregations.
-   */
-  private final AggregationLister aggregationReader;
-
-  /**
    * Provides the OBSW parameter values
    */
   private OBSWParameterValuesProvider valuesProvider;
 
-  public OBSWParameterManager(InputStream datapool, InputStream aggregations)
+  public OBSWParameterManager(InputStream datapool)
       throws ParserConfigurationException, SAXException, IOException {
     // Read from provided inputstreams
     parameterLister = new ParameterLister(datapool);
-    aggregationReader = new AggregationLister(aggregations, parameterLister);
 
     // Instantiate the value provider
     HashMap<Identifier, OBSWParameter> parameterMap = parameterLister.getParameters();

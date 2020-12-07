@@ -117,12 +117,8 @@ public class ParameterLister {
         String id = parameterElement.getAttribute(ATTRIBUTE_ID);
         String unit = parameterElement.getAttribute(ATTRIBUTE_UNIT);
 
-        OBSWParameter parameter = new OBSWParameter();
-        parameter.setId(Long.parseLong(id));
-        parameter.setName(name);
-        parameter.setDescription(description);
-        parameter.setType(malAttTypeName);
-        parameter.setUnit(unit);
+        OBSWParameter parameter =
+            new OBSWParameter(Long.parseLong(id), name, description, malAttTypeName, unit);
         map.put(new Identifier(parameter.getName()), parameter);
       }
     }

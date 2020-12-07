@@ -100,8 +100,7 @@ public class MCSupervisorBasicAdapter extends MonitorAndControlNMFAdapter {
     /* OBSW PARAMETERS PROXIES */
     try {
       obswParameterManager =
-          new OBSWParameterManager(getClass().getClassLoader().getResourceAsStream("Datapool.xml"),
-              getClass().getClassLoader().getResourceAsStream("Aggregations.xml"));
+          new OBSWParameterManager(getClass().getClassLoader().getResourceAsStream("Datapool.xml"));
       obswParameterManager.registerParametersProxies(registrationObject);
     } catch (ParserConfigurationException | SAXException | IOException e) {
       LOGGER.log(Level.SEVERE, "Couldn't register OBSW parameters proxies", e);

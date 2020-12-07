@@ -4,6 +4,7 @@
 
 package esa.mo.nmf.nanosatmosupervisor.parameter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -58,7 +59,7 @@ public class OBSWAggregation {
   /**
    * The OBSW parameters contained in this aggregation.
    */
-  private List<OBSWParameter> parameters;
+  private List<OBSWParameter> parameters = new ArrayList<>();
 
 
   /**
@@ -206,21 +207,12 @@ public class OBSWAggregation {
   }
 
   /**
-   * Sets the OBSW parameters of this aggregation.
-   *
-   * @param parameterList The parameters list to set.
-   */
-  public void setParameters(List<OBSWParameter> parameterList) {
-    this.parameters = parameterList;
-  }
-
-  /**
-   * Returns the OBSW parameters that this aggregation includes.
+   * Returns the OBSW parameters that this aggregation includes. Use this reference to add
+   * parameters to the aggregation.
    *
    * @return The parameters list.
    */
   public List<OBSWParameter> getParameters() {
     return parameters;
   }
-
 }

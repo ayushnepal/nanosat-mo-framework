@@ -4,9 +4,6 @@
 
 package esa.mo.nmf.nanosatmosupervisor.parameter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Holds the information for an OBSW parameter defined in the datapool XML file.
  *
@@ -16,33 +13,50 @@ public class OBSWParameter {
   /**
    * Parameter ID (object instance id of the ParameterIdentity).
    */
-  private Long id;
+  private final Long id;
 
   /**
    * Parameter name (Identifier, body of the ParameterIdentity)
    */
-  private String name;
+  private final String name;
 
   /**
    * Parameter description (description field of the ParameterDefinitionDetails)
    */
-  private String description;
+  private final String description;
 
   /**
    * Parameter type (rawType field of the ParameterDefinitionDetails)
    */
-  private String type;
+  private final String type;
 
   /**
    * Parameter unit (rawUnit field of the ParameterDefinitionDetails)
    */
-  private String unit;
+  private final String unit;
 
   /**
-   * The OBSW aggregations that include this parameter.
+   * The OBSW aggregation that includes this parameter.
    */
-  private List<OBSWAggregation> aggregations = new ArrayList<OBSWAggregation>();
+  private OBSWAggregation aggregation;
 
+  /**
+   * Creates a new instance of OBSWParameter.
+   * 
+   * @param id
+   * @param name
+   * @param description
+   * @param type
+   * @param unit
+   */
+  public OBSWParameter(Long id, String name, String description, String type, String unit) {
+    super();
+    this.id = id;
+    this.name = name;
+    this.description = description;
+    this.type = type;
+    this.unit = unit;
+  }
 
   /**
    * Returns the type.
@@ -51,15 +65,6 @@ public class OBSWParameter {
    */
   public String getType() {
     return type;
-  }
-
-  /**
-   * Sets the type.
-   *
-   * @param type The type.
-   */
-  public void setType(String type) {
-    this.type = type;
   }
 
   /**
@@ -72,15 +77,6 @@ public class OBSWParameter {
   }
 
   /**
-   * Sets the description.
-   *
-   * @param description The description.
-   */
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-  /**
    * Returns the unit.
    *
    * @return The unit.
@@ -90,30 +86,21 @@ public class OBSWParameter {
   }
 
   /**
-   * Sets the unit.
-   *
-   * @param unit The unit.
-   */
-  public void setUnit(String unit) {
-    this.unit = unit;
-  }
-
-  /**
-   * Returns the OBSW aggregations that include this parameter.
+   * Returns the OBSW aggregation that includes this parameter.
    * 
-   * @return A list of the aggregations
+   * @return The aggregation
    */
-  public List<OBSWAggregation> getAggregations() {
-    return aggregations;
+  public OBSWAggregation getAggregation() {
+    return aggregation;
   }
 
   /**
-   * Add an OBSW aggregations to the list of aggregations that include this parameter.
+   * Sets the OBSW aggregation that includes this parameter.
    * 
    * @param aggregation The aggregation to add
    */
-  public void addAggregation(OBSWAggregation aggregation) {
-    aggregations.add(aggregation);
+  public void setAggregation(OBSWAggregation aggregation) {
+    this.aggregation = aggregation;
   }
 
   /**
@@ -126,30 +113,12 @@ public class OBSWParameter {
   }
 
   /**
-   * Sets the ID.
-   *
-   * @param id The ID.
-   */
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  /**
    * Returns the name.
    *
    * @return The name.
    */
   public String getName() {
     return name;
-  }
-
-  /**
-   * Sets the name.
-   *
-   * @param name The name.
-   */
-  public void setName(String name) {
-    this.name = name;
   }
 
   /**
