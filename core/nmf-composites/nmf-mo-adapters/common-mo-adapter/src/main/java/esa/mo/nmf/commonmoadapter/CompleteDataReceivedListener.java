@@ -18,16 +18,24 @@
  * limitations under the License. 
  * ----------------------------------------------------------------------------
  */
-package esa.mo.nmf.groundmoadapter;
+package esa.mo.nmf.commonmoadapter;
 
-import java.util.EventListener;
+import esa.mo.mc.impl.provider.ParameterInstance;
 
 /**
- * An interface to receive data from the Parameter service via the monitorValue
- * operation
+ * An abstract class that passes the received data from the Parameter service
+ * coming via the monitorValue operation with the complete parameter data
  *
  * @author Cesar Coelho
  */
-public interface DataReceivedListener extends EventListener {
+public abstract class CompleteDataReceivedListener implements DataReceivedListener {
+
+    /**
+     * This interface must be implemented in order to receive the parameter
+     * content from the Parameter service coming via the monitorValue operation
+     *
+     * @param parameterInstance
+     */
+    public abstract void onDataReceived(ParameterInstance parameterInstance);
 
 }

@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * Copyright (C) 2017      European Space Agency
+ * Copyright (C) 2015      European Space Agency
  *                         European Space Operations Centre
  *                         Darmstadt
  *                         Germany
@@ -18,24 +18,26 @@
  * limitations under the License. 
  * ----------------------------------------------------------------------------
  */
-package esa.mo.nmf.groundmoadapter;
+package esa.mo.nmf.commonmoadapter;
 
-import esa.mo.mc.impl.provider.AggregationInstance;
+import java.io.Serializable;
 
 /**
- * An abstract class that passes the received data from the Aggregation service
- * coming via the monitorValue operation
+ * An abstract class that pushes the received data from the Parameter service 
+ * coming via the monitorValue operation with the basic parameter data: name of 
+ * the parameter and the content
  *
- * @author Phil Brabbin
+ * @author Cesar Coelho
  */
-public interface CompleteAggregationReceivedListener extends DataReceivedListener {
+public abstract class SimpleDataReceivedListener implements DataReceivedListener {
 
     /**
      * This interface must be implemented in order to receive the parameter
-     * content from the Aggregation service coming via the monitorValue operation
+     * content from the Parameter service coming via the monitorValue operation
      *
-     * @param aggregationInstance
+     * @param parameterName Name of the Parameter
+     * @param data The content of the data
      */
-    void onDataReceived(AggregationInstance aggregationInstance);
-
+    public abstract void onDataReceived (String parameterName, Serializable data);
+    
 }

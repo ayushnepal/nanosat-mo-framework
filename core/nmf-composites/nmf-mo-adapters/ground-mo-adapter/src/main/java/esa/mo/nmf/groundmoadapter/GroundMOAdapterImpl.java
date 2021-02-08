@@ -20,22 +20,42 @@
  */
 package esa.mo.nmf.groundmoadapter;
 
-import esa.mo.mc.impl.provider.ParameterInstance;
+import esa.mo.helpertools.connections.ConnectionConsumer;
+import esa.mo.nmf.commonmoadapter.CommonMOAdapterImpl;
+import java.util.logging.Logger;
+import org.ccsds.moims.mo.common.directory.structures.ProviderSummary;
 
 /**
- * An abstract class that passes the received data from the Parameter service
- * coming via the monitorValue operation with the complete parameter data
+ * The implementation of the Ground MO Adapter.
  *
  * @author Cesar Coelho
  */
-public abstract class CompleteDataReceivedListener implements DataReceivedListener {
+public class GroundMOAdapterImpl extends CommonMOAdapterImpl
+{
 
-    /**
-     * This interface must be implemented in order to receive the parameter
-     * content from the Parameter service coming via the monitorValue operation
-     *
-     * @param parameterInstance
-     */
-    public abstract void onDataReceived(ParameterInstance parameterInstance);
+  /* Logger */
+  private static final Logger LOGGER = Logger.getLogger(GroundMOAdapterImpl.class.getName());
 
+  /**
+   * The constructor of this class
+   *
+   * @param connection The connection details of the provider
+   */
+  public GroundMOAdapterImpl(final ConnectionConsumer connection)
+  {
+    super(connection);
+    super.init();
+  }
+
+  /**
+   * The constructor of this class
+   *
+   * @param providerDetails The Provider details. This object can be obtained from the Directory
+   *                        service
+   */
+  public GroundMOAdapterImpl(final ProviderSummary providerDetails)
+  {
+    super(providerDetails);
+    super.init();
+  }
 }
