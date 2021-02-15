@@ -691,12 +691,19 @@ public class CommonMOAdapterImpl extends NMFConsumer implements SimpleCommanding
         LOGGER.log(Level.SEVERE, "Couldn't get parameters instance IDs (unknown error)");
       }
       
-      if(objIds.size() <= parameterNames.size()) {
+      // Check how many we got back
+      if(objIds.size() < parameterNames.size()) {
+        String paramNames = "";
+        for(String paramName : parameterNames) {
+          paramNames += (paramName + ",");
+        }
         if(objIds.size() <= 0) {
-          LOGGER.log(Level.SEVERE, "Couldn't get any parameters instance IDs, please check the names you provided");
+          LOGGER.log(Level.SEVERE,
+              String.format("Couldn't get any parameters instance IDs, please check the names you provided: %s", paramNames));
         }
         else {
-          LOGGER.log(Level.WARNING, "Some parameters were not found, please check the names you provided");
+          LOGGER.log(Level.WARNING,
+              String.format("Couldn't get some parameters instance IDs, please check the names you provided: %s", paramNames));
         }
       }
       

@@ -215,4 +215,11 @@ public class OBSWAggregation {
   public List<OBSWParameter> getParameters() {
     return parameters;
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public String toString() {
+    return "OBSWAggregation [id=" + id + ", name=" + name + ", description=" + description
+        + ", parameters_count=" + parameters.size() + "]";
+  }
 }

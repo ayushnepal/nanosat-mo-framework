@@ -21,6 +21,7 @@
 package esa.mo.nmf.spacemoadapter;
 
 import esa.mo.common.impl.consumer.DirectoryConsumerServiceImpl;
+import esa.mo.common.impl.util.HelperCommon;
 import esa.mo.helpertools.connections.ConnectionConsumer;
 import esa.mo.helpertools.misc.Const;
 import esa.mo.nmf.commonmoadapter.CommonMOAdapterImpl;
@@ -73,11 +74,11 @@ public class SpaceMOApdapterImpl extends CommonMOAdapterImpl {
 
 
   /**
-   * 
-   * TODO spaceMOAdapterForSupervisor
+   * Returns a instance of SpaceMOApdapterImpl that consumes the NMF supervisor provider
+   * found in the central directory service.
    *
-   * @param centralDirectoryServiceURI
-   * @return
+   * @param centralDirectoryServiceURI URI of the central directory service
+   * @return The SpaceMOAdapter instance.
    */
   public static SpaceMOApdapterImpl forNMFSupervisor(URI centralDirectoryServiceURI) {
     return new SpaceMOApdapterImpl(getNMFSupervisorProviderSummary(centralDirectoryServiceURI));
@@ -104,7 +105,7 @@ public class SpaceMOApdapterImpl extends CommonMOAdapterImpl {
           centralDirectory.getDirectoryStub().lookupProvider(sf2);
       if (supervisorConnections.size() == 1) {
         LOGGER.log(Level.INFO, String.format("Found %s provider", Const.NANOSAT_MO_SUPERVISOR_NAME));
-        return supervisorConnections.get(0);
+        return HelperCommon.selectBestIPCTransport(supervisorConnections.get(0));
       } else if (supervisorConnections.size() > 1) {
         LOGGER.log(Level.SEVERE, String.format("Found multiple %s providers", Const.NANOSAT_MO_SUPERVISOR_NAME));
       } else {
