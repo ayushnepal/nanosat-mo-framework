@@ -35,6 +35,11 @@ public class OBSWParameterManager {
   private static final Logger LOGGER = Logger.getLogger(OBSWParameterManager.class.getName());
 
   /**
+   * Default OBSW parameter report interval (seconds)
+   */
+  private static final int DEFAULT_REPORT_INTERVAL = 5;
+
+  /**
    * Helper to read the OBSW parameter from datapool.
    */
   private final ParameterLister parameterLister;
@@ -80,7 +85,7 @@ public class OBSWParameterManager {
     for (OBSWParameter param : parameters) {
       paramDefs.add(new ParameterDefinitionDetails(param.getDescription(),
           HelperAttributes.attributeName2typeShortForm(param.getType()).byteValue(), "", false,
-          new Duration(10), null, null));
+          new Duration(DEFAULT_REPORT_INTERVAL), null, null));
       paramIdentifiers.add(new Identifier(param.getName()));
     }
 
