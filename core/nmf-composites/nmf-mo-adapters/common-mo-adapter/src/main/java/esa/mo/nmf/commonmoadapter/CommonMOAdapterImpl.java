@@ -669,52 +669,60 @@ public class CommonMOAdapterImpl extends NMFConsumer implements SimpleCommanding
 
   /** {@inheritDoc} */
   @Override
-  public void toggleParametersGeneration(List<String> parameterNames, boolean enableGeneration) {
+  public void toggleParametersGeneration(List<String> parameterNames, boolean enableGeneration)
+      throws NMFException {
     // Nothing to do in those cases
-    if(parameterNames == null || parameterNames.size() <= 0){
+    if (parameterNames == null) {
+      LOGGER.log(Level.WARNING, "Provided parameterNames list is null");
+      return;
+    }
+    if (parameterNames.size() <= 0) {
+      LOGGER.log(Level.WARNING, "Provided parameterNames list is empty");
       return;
     }
 
     ParameterStub parameterService = super.getMCServices().getParameterService().getParameterStub();
-    
-    // Create identifier list
+
+    // Create identifier list and parameters names string for error reporting
+    String paramNames = "";
     IdentifierList parameters = new IdentifierList(1);
     for (String parameterName : parameterNames) {
-      parameters.add(new Identifier(parameterName)); 
+      parameters.add(new Identifier(parameterName));
+      paramNames += (parameterName + ",");
     }
-    
+
     try {
       // Query parameters IDs
       ObjectInstancePairList objIds = parameterService.listDefinition(parameters);
-      
-      if(objIds == null) {
-        LOGGER.log(Level.SEVERE, "Couldn't get parameters instance IDs (unknown error)");
+
+      if (objIds == null) {
+        throw new NMFException(String.format(
+            "Error while toggling parameters generation, couldn't get parameters instance IDs (unknown error) for parameters names: %s",
+            paramNames));
       }
-      
+
       // Check how many we got back
-      if(objIds.size() < parameterNames.size()) {
-        String paramNames = "";
-        for(String paramName : parameterNames) {
-          paramNames += (paramName + ",");
-        }
-        if(objIds.size() <= 0) {
-          LOGGER.log(Level.SEVERE,
-              String.format("Couldn't get any parameters instance IDs, please check the names you provided: %s", paramNames));
-        }
-        else {
-          LOGGER.log(Level.WARNING,
-              String.format("Couldn't get some parameters instance IDs, please check the names you provided: %s", paramNames));
+      if (objIds.size() < parameterNames.size()) {
+        if (objIds.size() <= 0) {
+          throw new NMFException(String.format(
+              "Error while toggling parameters generation, 0 parameters instance IDs found for parameters names: %s",
+              paramNames));
+        } else {
+          LOGGER.log(Level.WARNING, String.format(
+              "Couldn't get some parameters instance IDs, for parameters names: %s",
+              paramNames));
         }
       }
-      
+
       // toggle their generation
       InstanceBooleanPairList ibpl = new InstanceBooleanPairList();
-      for(ObjectInstancePair objectInstancePair : objIds) {
-        ibpl.add(new InstanceBooleanPair(objectInstancePair.getObjIdentityInstanceId(), enableGeneration));
+      for (ObjectInstancePair objectInstancePair : objIds) {
+        ibpl.add(new InstanceBooleanPair(objectInstancePair.getObjIdentityInstanceId(),
+            enableGeneration));
       }
-      parameterService.enableGeneration(false, ibpl);      
+      parameterService.enableGeneration(false, ibpl);
     } catch (MALInteractionException | MALException e) {
-      LOGGER.log(Level.SEVERE, "Error while toggling parameters generation", e);
+      throw new NMFException("Error while toggling parameters generation", e);
     }
   }
 }
